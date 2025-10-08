@@ -57,7 +57,7 @@
               <i class="fas fa-lock"></i>
               <input type="password" name="password" id="password" placeholder="Password" required>
           </div>
-          <p class="recover"><a href="#">Recover Password</a></p>
+        
          <input type="submit" class="btn" value="Sign In" name="signIn">
         </form>
         <p class="or">----------or--------</p>
