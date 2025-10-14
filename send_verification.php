@@ -1,55 +1,67 @@
 <?php
 session_start();
- use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\Exception;
-    require '../vendor/autoload.php';
-include '../loginregister/connect.php'; // DB connection
+include("../loginregister/connect.php");
+require '../vendor/autoload.php'; // Composer autoload
 
-// Make sure the user is logged in and email exists in session
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 if (!isset($_SESSION['email'])) {
-    die("❌ No user email found in session. Please log in first.");
+  echo json_encode(["status" => "error", "message" => "User not logged in."]);
+  exit();
 }
 
-$email = $_SESSION['email']; 
-$code = rand(100000, 999999); // generate 6-digit code
-$expiry = date("Y-m-d H:i:s", strtotime("+10 minutes"));
+$email = $_SESSION['email'];
+$code = rand(100000, 999999); // 6-digit verification code
+$expires = date("Y-m-d H:i:s", strtotime("+10 minutes"));
 
-// Insert into verification_codes table
-$stmt = $conn->prepare("INSERT INTO verification_codes (user_email, verification_code, expires_at) 
-                        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))");
-$stmt->bind_param("ss", $email, $code);
+// Store code in database
+$stmt = $conn->prepare("INSERT INTO twofa_codes (email, code, expires_at) VALUES (?, ?, ?)
+  ON DUPLICATE KEY UPDATE code=?, expires_at=?");
+$stmt->bind_param("sssss", $email, $code, $expires, $code, $expires);
+$stmt->execute();
+$stmt->close();
 
-if ($stmt->execute()) {
-    // Load PHPMailer
- // after composer require phpmailer/phpmailer
+// Verification link
+$link = "http://localhost/pantrypal/settings/verify_2fa.php?email=" . urlencode($email);
 
-    $mail = new PHPMailer(true);
+$mail = new PHPMailer(true);
 
-    try {
-        //Server settings
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'seanwarkey@gmail.com'; // your Gmail
-        $mail->Password   = 'khmq mcje hyod ucfs';   // Gmail App Password (not your real password)
-        $mail->SMTPSecure = 'tls';
-        $mail->Port       = 587;
+try {
+  // Server settings
+  $mail->isSMTP();
+  $mail->Host = 'smtp.gmail.com';
+  $mail->SMTPAuth = true;
+  $mail->Username = 'tffbruv@gmail.com';
+  $mail->Password = 'uzkx ayty xsbx huat'; // Gmail App Password
+  $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+  $mail->Port = 587;
 
-        //Recipients
-        $mail->setFrom('yourgmail@gmail.com', 'PantryPal');
-        $mail->addAddress($email);
+  // Recipients
+  $mail->setFrom('tffbruv@gmail.com', 'PantryPal');
+  $mail->addAddress($email);
 
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = "Your PantryPal Verification Code";
-        $mail->Body    = "Hello, here is your 6-digit verification code: <b>$code</b>. It expires in 10 minutes.";
+  // Content
+  $mail->isHTML(true);
+  $mail->Subject = 'PantryPal - Verify Your 2FA';
+  $mail->Body = "
+    <h2>Two-Factor Authentication Verification</h2>
+    <p>Your 6-digit verification code is:</p>
+    <h1 style='color:#4CAF50;'>$code</h1>
+    <p>This code will expire in 10 minutes.</p>
+    <p>Click below to verify your account:</p>
+    <a href='$link' style='color:#4CAF50;'>Verify My 2FA</a>
+  ";
 
-        $mail->send();
-        echo "✅ Verification email sent!";
-    } catch (Exception $e) {
-        echo "❌ Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-    }
-} else {
-    echo "❌ Database Error: " . $conn->error;
+  // Send mail
+  if ($mail->send()) {
+    echo json_encode(["status" => "success", "message" => "Verification email sent to $email."]);
+  } else {
+    echo json_encode(["status" => "error", "message" => "Email not sent."]);
+  }
+
+} catch (Exception $e) {
+  // Clear error message
+  echo json_encode(["status" => "error", "message" => "Mailer Error: " . $mail->ErrorInfo]);
 }
 ?>
