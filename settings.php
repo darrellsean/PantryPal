@@ -68,14 +68,17 @@ $fullName = $user['firstName'] . " " . $user['lastName'];
   });
 
   document.getElementById("enable2fa").addEventListener("change", function() {
-    if (this.checked) {
-      fetch("send_verification.php", { method: "POST" })
-        .then(response => response.text())
-        .then(data => alert(data));
-    } else {
-      alert("2FA disabled.");
-    }
-  });
+  if (this.checked) {
+    fetch("send_verification.php", { method: "POST" })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(err => alert("Error: " + err));
+  } else {
+    alert("2FA disabled.");
+  }
+});
+
+
   </script>
 </body>
 </html>
