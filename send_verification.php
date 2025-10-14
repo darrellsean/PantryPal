@@ -23,7 +23,8 @@ $stmt->execute();
 $stmt->close();
 
 // Verification link
-$link = "http://localhost/pantrypal/settings/verify_2fa.php?email=" . urlencode($email);
+$link = "http://localhost/pantrypal/settings/verify_2fa.php";
+
 
 $mail = new PHPMailer(true);
 
