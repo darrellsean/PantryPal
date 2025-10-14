@@ -11,6 +11,10 @@ $email = $_SESSION['email'];
 $query = mysqli_query($conn, "SELECT firstName, lastName FROM users WHERE email='$email'");
 $user = mysqli_fetch_assoc($query);
 $fullName = $user['firstName'] . " " . $user['lastName'];
+$check2fa = mysqli_query($conn, "SELECT twofa_enabled FROM users WHERE email='$email'");
+$row2fa = mysqli_fetch_assoc($check2fa);
+$is2faEnabled = $row2fa['twofa_enabled'];
+
 ?>
 
 <!DOCTYPE html>
@@ -49,11 +53,13 @@ $fullName = $user['firstName'] . " " . $user['lastName'];
       <div class="settings-container">
         <h2>Privacy & Security</h2>
         <div class="setting-item">
-          <label for="enable2fa">Enable Two-Factor Authentication (2FA)</label>
-          <label class="switch">
-            <input type="checkbox" id="enable2fa">
-            <span class="slider round"></span>
-          </label>
+  <label for="enable2fa">Enable Two-Factor Authentication (2FA)</label>
+  <label class="switch">
+    <input type="checkbox" id="enable2fa" <?php if($is2faEnabled) echo 'checked'; ?>>
+    <span class="slider round"></span>
+  </label>
+</div>
+
         </div>
       </div>
     </main>
@@ -67,14 +73,17 @@ $fullName = $user['firstName'] . " " . $user['lastName'];
     sidebar.classList.toggle('collapsed');
   });
 
-  document.getElementById("enable2fa").addEventListener("change", function() {
+ document.getElementById("enable2fa").addEventListener("change", function() {
   if (this.checked) {
     fetch("send_verification.php", { method: "POST" })
       .then(res => res.json())
       .then(data => alert(data.message))
       .catch(err => alert("Error: " + err));
   } else {
-    alert("2FA disabled.");
+    fetch("disable_2fa.php", { method: "POST" })
+      .then(res => res.text())
+      .then(data => alert(data))
+      .catch(err => alert("Error: " + err));
   }
 });
 
