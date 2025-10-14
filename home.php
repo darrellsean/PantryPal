@@ -44,8 +44,9 @@ $fullName = $user['firstName'] . " " . $user['lastName'];
 
   <!-- Navigation -->
   <nav class="nav">
-    <a href="#" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
-    <a href="#" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+    <a href="../manage-inventory/index.php" class="nav-item">
+        <i class="fas fa-dashboard"></i><span>Dashboard</span>
+    <a href="../settings/settings.php" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
   </nav>
 
   <!-- Greeting -->
