@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS food_item (
     category VARCHAR(100),
     quantity VARCHAR(50),
     expiry_date DATE,
-    is_for_donation BOOLEAN DEFAULT FALSE,
+    status ENUM('Available', 'For Donation', 'For Meal', 'Used', 'Expired') DEFAULT 'Available',
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
