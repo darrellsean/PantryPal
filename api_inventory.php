@@ -38,7 +38,6 @@ if ($action === 'get') {
     $stmt = $mysqli->prepare("SELECT * FROM food_item WHERE item_id=? AND user_id=?");
     $stmt->bind_param('ii', $id, $user_id);
     $stmt->execute();
-    $item = $
     $item = $stmt->get_result()->fetch_assoc();
     echo json_encode(['item'=>$item]);
     exit;
@@ -63,3 +62,4 @@ if ($action === 'update_status') {
     echo json_encode(['ok'=>true]);
     exit;
 }
+
