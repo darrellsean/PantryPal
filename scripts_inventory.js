@@ -69,9 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
             Status: 
             <select class="status-dropdown" data-id="${item.item_id}">
               <option value="Available" ${item.status==='Available'?'selected':''}>Available</option>
-              <option value="Donation" ${item.status==='Donation'?'selected':''}>Flagged for Donation</option>
-              <option value="Meal" ${item.status==='Meal'?'selected':''}>Arranged for Meal</option>
+              <option value="For Donation" ${item.status==='For Donation'?'selected':''}>Flagged for Donation</option>
+              <option value="For Meal" ${item.status==='For Meal'?'selected':''}>Arranged for Meal</option>
               <option value="Used" ${item.status==='Used'?'selected':''}>Used</option>
+              <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
             </select>
           </div>
           <div class="card-actions">
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch("api_inventory.php?action=update_status", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `id=${id}&status=${status}`
+          body: `id=${id}&status=${encodeURIComponent(status)}`
         }).then(() => showToast("✅ Status updated!", "#f59e0b"));
       });
     });
@@ -138,71 +139,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   searchInput.addEventListener("input", applyFilters);
-  filterCategory.addEventListener("change", applyFilters);
-  filterStatus.addEventListener("change", applyFilters);
-
-  // 🧰 Add Item
-  document.getElementById("addItemBtn").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
-  document.getElementById("addItemBtnEmpty").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
-
-  document.getElementById("closeModal").onclick = () => modal.classList.add("hidden");
-
-  // 💾 Save Item
-  form.onsubmit = e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch("api_inventory.php?action=save", { method: "POST", body: formData })
-      .then(r => r.json())
-      .then(() => {
-        modal.classList.add("hidden");
-        fetchInventory();
-        showToast("✅ Item successfully saved!");
-      });
-  };
-
-  // ✏️ Edit Item
-  window.editItem = function (id) {
-    fetch("api_inventory.php?action=get&id=" + id)
-      .then(r => r.json())
-      .then(data => {
-        modal.classList.remove("hidden");
-        document.getElementById("modalTitle").textContent = "✏️ Edit Item";
-        document.getElementById("item_id").value = data.item.item_id;
-        document.getElementById("item_name").value = data.item.item_name;
-        document.getElementById("category").value = data.item.category;
-        document.getElementById("quantity").value = data.item.quantity;
-        document.getElementById("expiry_date").value = data.item.expiry_date;
-      });
-  };
-
-  // 🗑️ Delete Item
-  window.showDelete = function (id) {
-    selectedDeleteId = id;
-    deleteModal.classList.remove("hidden");
-  };
-
-  document.getElementById("cancelDelete").onclick = () => deleteModal.classList.add("hidden");
-
-  document.getElementById("confirmDelete").onclick = () => {
-    fetch("api_inventory.php?action=delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "id=" + selectedDeleteId
-    }).then(() => {
-      deleteModal.classList.add("hidden");
-      fetchInventory();
-      showToast("🗑️ Item deleted!", "#e53935");
-    });
-  };
-
-  // Initial Load
-  fetchInventory();
-});
+  filterCategor
