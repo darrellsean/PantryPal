@@ -1,21 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
 
-/* Global + background */
+/* ================================
+   GLOBAL
+================================ */
 body {
   margin: 0;
   font-family: 'Montserrat', sans-serif;
-  background: url(blue\ kitchen.png) no-repeat center center fixed;
+  background: url('blue kitchen.png') no-repeat center center fixed;
   background-size: cover;
   color: #333;
   overflow-x: hidden;
 }
 
-.dashboard {
+.container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
 }
 
-/* Sidebar same as inventory */
+/* ================================
+   SIDEBAR
+================================ */
 .sidebar {
   position: fixed;
   top: 0;
@@ -44,14 +48,15 @@ body {
   width: 200px;
   height: 60px;
   margin-bottom: 40px;
+  transition: all 0.3s ease;
 }
 
-/* Nav */
 .nav {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
 .nav-item {
   text-decoration: none;
   color: #cbd5e1;
@@ -62,30 +67,54 @@ body {
   border-radius: 8px;
   transition: all 0.3s ease;
 }
-.nav-item:hover, .nav-item.active {
+
+.nav-item:hover,
+.nav-item.active {
   background-color: #3399ff;
   color: white;
 }
 
-/* Footer */
 .sidebar-footer {
-  position: absolute;
-  bottom: 20px;
-  width: 90%;
+  margin-top: auto;
   text-align: center;
-  color: #fff;
   font-size: 14px;
 }
 
-/* Main */
+/* Sidebar collapsed */
+.container.sidebar-collapsed .sidebar {
+  width: 70px;
+}
+
+.container.sidebar-collapsed .sidebar .logo img {
+  width: 50px;
+  height: 40px;
+}
+
+.container.sidebar-collapsed .sidebar .nav-item span,
+.container.sidebar-collapsed .sidebar .sidebar-footer {
+  display: none;
+}
+
+.container.sidebar-collapsed .sidebar .nav-item {
+  justify-content: center;
+}
+
+/* ================================
+   MAIN CONTENT
+================================ */
 .main-content {
-  margin-left: 250px;
   flex: 1;
-  background: rgba(255, 255, 255, 0.93);
+  margin-left: 250px;
+  padding: 25px;
+  background: rgba(255,255,255,0.93);
   backdrop-filter: blur(10px);
   border-radius: 15px 0 0 15px;
-  padding: 25px;
   overflow-y: auto;
+  transition: margin-left 0.3s ease;
+}
+
+.container.sidebar-collapsed .main-content {
+  margin-left: 70px;
 }
 
 /* Topbar */
@@ -98,35 +127,9 @@ body {
   font-weight: 600;
 }
 
-/* Analytics */
-.analytics-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-.summary-cards {
-  display: flex;
-  gap: 20px;
-  justify-content: space-around;
-}
-
-.summary-card {
-  flex: 1;
-  text-align: center;
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-.summary-card h3 {
-  margin-bottom: 10px;
-  color: #1e293b;
-}
-.summary-card.total p { color: #22c55e; font-size: 2rem; font-weight: bold; }
-.summary-card.expiring p { color: #f59e0b; font-size: 2rem; font-weight: bold; }
-.summary-card.expired p { color: #ef4444; font-size: 2rem; font-weight: bold; }
-
+/* ================================
+   CHARTS
+================================ */
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -146,6 +149,9 @@ body {
   margin-bottom: 20px;
 }
 
+/* ================================
+   FOOTER
+================================ */
 footer {
   text-align: center;
   margin-top: 40px;
