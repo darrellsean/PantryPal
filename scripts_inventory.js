@@ -11,11 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const filterCategory = document.getElementById("filterCategory");
   const filterStatus = document.getElementById("filterStatus");
-  const addItemBtn = document.getElementById("addItemBtn");
-  const addItemBtnEmpty = document.getElementById("addItemBtnEmpty");
-  const closeModal = document.getElementById("closeModal");
-  const confirmDelete = document.getElementById("confirmDelete");
-  const cancelDelete = document.getElementById("cancelDelete");
 
   // 🌟 Toast Notification
   function showToast(msg, color = "#1976d2") {
@@ -64,29 +59,27 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (diff <= 3) cssClass = "expiring";
       }
 
-      const card = document.createElement("div");
-      card.className = `inventory-card ${cssClass}`;
-      card.innerHTML = `
-        <h3>${getCategoryIcon(item.category)} ${item.item_name}</h3>
-        <div class="card-meta">Category: ${item.category || "N/A"}</div>
-        <div class="card-meta">Qty: ${item.quantity || "N/A"}</div>
-        <div class="card-meta">Expires: ${item.expiry_date || "—"}</div>
-        <div class="card-meta">
-          Status: 
-          <select class="status-dropdown" data-id="${item.item_id}">
-            <option value="Available" ${item.status==='Available'?'selected':''}>Available</option>
-            <option value="For Donation" ${item.status==='For Donation'?'selected':''}>Flagged for Donation</option>
-            <option value="For Meal" ${item.status==='For Meal'?'selected':''}>Arranged for Meal</option>
-            <option value="Used" ${item.status==='Used'?'selected':''}>Used</option>
-            <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
-          </select>
-        </div>
-        <div class="card-actions">
-          <button class="btn-secondary" onclick="editItem(${item.item_id})">✏️ Edit</button>
-          <button class="btn-danger" onclick="showDelete(${item.item_id})">🗑️ Delete</button>
-        </div>
-      `;
-      inventoryList.appendChild(card);
+      inventoryList.innerHTML += `
+        <div class="inventory-card ${cssClass}">
+          <h3>${getCategoryIcon(item.category)} ${item.item_name}</h3>
+          <div class="card-meta">Category: ${item.category || "N/A"}</div>
+          <div class="card-meta">Qty: ${item.quantity || "N/A"}</div>
+          <div class="card-meta">Expires: ${item.expiry_date || "—"}</div>
+          <div class="card-meta">
+            Status: 
+            <select class="status-dropdown" data-id="${item.item_id}">
+              <option value="Available" ${item.status==='Available'?'selected':''}>Available</option>
+              <option value="For Donation" ${item.status==='For Donation'?'selected':''}>Flagged for Donation</option>
+              <option value="For Meal" ${item.status==='For Meal'?'selected':''}>Arranged for Meal</option>
+              <option value="Used" ${item.status==='Used'?'selected':''}>Used</option>
+              <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
+            </select>
+          </div>
+          <div class="card-actions">
+            <button class="btn-secondary" onclick="editItem(${item.item_id})">✏️ Edit</button>
+            <button class="btn-danger" onclick="showDelete(${item.item_id})">🗑️ Delete</button>
+          </div>
+        </div>`;
     });
 
     // Attach event listener for status change
@@ -146,83 +139,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   searchInput.addEventListener("input", applyFilters);
-  filterCategory.addEventListener("change", applyFilters);
-  filterStatus.addEventListener("change", applyFilters);
-
-  // 🟢 Add Item Modal
-  function openModal() {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-    document.getElementById("item_id").value = "";
-  }
-
-  addItemBtn.addEventListener("click", openModal);
-  addItemBtnEmpty.addEventListener("click", openModal);
-  closeModal.addEventListener("click", () => modal.classList.add("hidden"));
-
-  // 📝 Submit Add/Edit form
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    formData.append("action", "save");
-
-    fetch("api_inventory.php", {
-      method: "POST",
-      body: formData
-    })
-    .then(r => r.json())
-    .then(res => {
-      if (res.ok) {
-        modal.classList.add("hidden");
-        showToast("✅ Item saved successfully!");
-        fetchInventory();
-      } else {
-        showToast("❌ Failed to save item", "#dc2626");
-      }
-    });
-  });
-
-  // ✏️ Edit Item
-  window.editItem = function(id) {
-    fetch(`api_inventory.php?action=get&id=${id}`)
-      .then(r => r.json())
-      .then(data => {
-        const item = data.item;
-        if (!item) return;
-        modal.classList.remove("hidden");
-        document.getElementById("modalTitle").textContent = "✏️ Edit Item";
-        document.getElementById("item_id").value = item.item_id;
-        document.getElementById("item_name").value = item.item_name;
-        document.getElementById("category").value = item.category;
-        document.getElementById("quantity").value = item.quantity;
-        document.getElementById("expiry_date").value = item.expiry_date;
-      });
-  };
-
-  // 🗑️ Delete Item
-  window.showDelete = function(id) {
-    selectedDeleteId = id;
-    deleteModal.classList.remove("hidden");
-  };
-
-  confirmDelete.addEventListener("click", () => {
-    fetch("api_inventory.php?action=delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `id=${selectedDeleteId}`
-    }).then(r => r.json())
-      .then(res => {
-        if (res.ok) {
-          deleteModal.classList.add("hidden");
-          showToast("🗑️ Item deleted", "#dc2626");
-          fetchInventory();
-        }
-      });
-  });
-
-  cancelDelete.addEventListener("click", () => deleteModal.classList.add("hidden"));
-
-  // initial fetch
-  fetchInventory();
-});
+  filterCategor

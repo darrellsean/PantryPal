@@ -62,22 +62,27 @@ INSERT INTO `users` (`ID`, `firstName`, `lastName`, `email`, `password`, `twofa_
 -- --------------------------------------------------------
 -- NEW TABLE: food_item
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `food_item` (
-  `item_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) NOT NULL,
-  `item_name` varchar(100) NOT NULL,
-  `category` varchar(50) DEFAULT NULL,
-  `quantity` varchar(20) DEFAULT NULL,
-  `expiry_date` date DEFAULT NULL,
+DROP TABLE IF EXISTS `food_item`;
+
+CREATE TABLE `food_item` (
+  `item_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `user_id` INT(10) NOT NULL,
+  `item_name` VARCHAR(100) NOT NULL,
+  `category` VARCHAR(50) DEFAULT NULL,
+  `quantity` VARCHAR(20) DEFAULT NULL,
+  `expiry_date` DATE DEFAULT NULL,
+  `status` ENUM('Available', 'For Donation', 'For Meal', 'Used', 'Expired') DEFAULT 'Available',
   PRIMARY KEY (`item_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Sample data for food_item
-INSERT INTO `food_item` (`user_id`, `item_name`, `category`, `quantity`, `expiry_date`) VALUES
-(1, 'Milk', 'Dairy', '2 bottles', '2025-10-18'),
-(1, 'Chicken Breast', 'Meat', '1 kg', '2025-10-17'),
-(2, 'Apples', 'Fruit', '5 pcs', '2025-10-20');
+INSERT INTO `food_item` (`user_id`, `item_name`, `category`, `quantity`, `expiry_date`, `status`) VALUES
+(1, 'Milk', 'Dairy', '2 bottles', '2025-10-18', 'For Meal'),
+(1, 'Chicken Breast', 'Meat', '1 kg', '2025-10-17', 'For Meal'),
+(2, 'Apples', 'Fruit', '5 pcs', '2025-10-20', 'For Meal');
+
+
+
 
 -- --------------------------------------------------------
 -- NEW TABLE: meal_plans

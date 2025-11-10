@@ -1,0 +1,201 @@
+/* Global */
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: url(blue\ kitchen.png);
+  background-size: cover;
+  color: #333;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  position: relative;
+  width: 250px;
+  background-color: #1e293b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 15px;
+  transition: width 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #3399ff;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.toggle-btn:hover {
+  color: #3399ff;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Default logo size */
+.logo img {
+  width: 200px;
+  height: 60px;;
+  object-fit: contain;
+  transition: all 0.3s ease; /* smooth resizing */
+}
+
+/* When sidebar is collapsed */
+.sidebar.collapsed .logo img {
+  width: 50px;   /* smaller logo */
+  height: 40px;
+}
+
+
+
+
+/* Nav */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: #cbd5e1;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  padding: 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: #3399ff;
+  color: white;
+}
+
+/* Collapsed Sidebar */
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar.collapsed .logo h2,
+.sidebar.collapsed .nav-item span {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+}
+
+/* Background for Home Page */
+.main-content.home {
+  flex: 1;
+  background: url("blue\ kitchen.png") no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Overlay Card */
+.home-overlay {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 40px;
+  border-radius: 15px;
+  max-width: 500px;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Logo */
+.home-logo {
+  width: 300px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Heading */
+.home-overlay h1 {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+}
+
+/* Paragraph */
+.home-overlay p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  color: #e0e0e0;
+}
+
+/* Button */
+.btn-primary {
+  display: inline-block;
+  background: #2e3a4f;
+  color: #fff;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #3399ff;;
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 20px;
+  width: 93%;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+/* Hide greeting when sidebar is collapsed */
+.sidebar.collapsed .sidebar-footer {
+  display: none;
+}
+
+.logout-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #e74c3c;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+
+
+

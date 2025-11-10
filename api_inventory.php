@@ -51,3 +51,15 @@ if ($action === 'delete') {
     echo json_encode(['ok'=>true]);
     exit;
 }
+
+// 🔹 New: Update status
+if ($action === 'update_status') {
+    $id = $_POST['id'];
+    $status = $_POST['status'];
+    $stmt = $mysqli->prepare("UPDATE food_item SET status=? WHERE item_id=? AND user_id=?");
+    $stmt->bind_param('sii', $status, $id, $user_id);
+    $stmt->execute();
+    echo json_encode(['ok'=>true]);
+    exit;
+}
+
