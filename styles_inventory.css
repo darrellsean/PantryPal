@@ -224,6 +224,65 @@ body {
 
 .inventory-card {
   background: white;
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 41, 59, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.form-grid { display: flex; flex-direction: column; gap: 15px; }
+.input-field, select.input-field {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+footer {
+  text-align: center;
+  color: #555;
+  padding: 20px;
+  margin-top: 40px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
@@ -430,7 +489,6 @@ footer {
 
 /* =============================
    NEW STYLES (Status & Filters)
-============================= */
 /* Status Dropdown inside card */
 .status-dropdown {
   padding: 6px 10px;
