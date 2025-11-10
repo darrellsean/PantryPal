@@ -36,7 +36,6 @@ require_login();
         <a href="view_notifications.php" class="nav-item"><i class="fas fa-bell"></i><span>Notifications</span></a>
         <a href="profile.php" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
         <a href="settings.php" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
-
       </nav>
 
       <!-- Footer -->

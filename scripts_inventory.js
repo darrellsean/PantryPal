@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const toast = document.getElementById("toast");
   const emptyState = document.getElementById("emptyState");
   const searchInput = document.getElementById("searchInput");
+  const filterCategory = document.getElementById("filterCategory");
+  const filterStatus = document.getElementById("filterStatus");
 
   // 🌟 Toast Notification
   function showToast(msg, color = "#1976d2") {
@@ -63,11 +65,34 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="card-meta">Category: ${item.category || "N/A"}</div>
           <div class="card-meta">Qty: ${item.quantity || "N/A"}</div>
           <div class="card-meta">Expires: ${item.expiry_date || "—"}</div>
+          <div class="card-meta">
+            Status: 
+            <select class="status-dropdown" data-id="${item.item_id}">
+              <option value="Available" ${item.status==='Available'?'selected':''}>Available</option>
+              <option value="For Donation" ${item.status==='For Donation'?'selected':''}>Flagged for Donation</option>
+              <option value="For Meal" ${item.status==='For Meal'?'selected':''}>Arranged for Meal</option>
+              <option value="Used" ${item.status==='Used'?'selected':''}>Used</option>
+              <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
+            </select>
+          </div>
           <div class="card-actions">
             <button class="btn-secondary" onclick="editItem(${item.item_id})">✏️ Edit</button>
             <button class="btn-danger" onclick="showDelete(${item.item_id})">🗑️ Delete</button>
           </div>
         </div>`;
+    });
+
+    // Attach event listener for status change
+    document.querySelectorAll(".status-dropdown").forEach(sel => {
+      sel.addEventListener("change", e => {
+        const id = e.target.dataset.id;
+        const status = e.target.value;
+        fetch("api_inventory.php?action=update_status", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `id=${id}&status=${encodeURIComponent(status)}`
+        }).then(() => showToast("✅ Status updated!", "#f59e0b"));
+      });
     });
   }
 
@@ -77,97 +102,41 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(r => r.json())
       .then(data => {
         allItems = data.items || [];
-        renderInventory(allItems);
+        applyFilters();
       });
   }
 
-  // 🔍 Search Functionality
-  searchInput.addEventListener("input", () => {
+  // 🔍 Filter & Search
+  function applyFilters() {
     const query = searchInput.value.trim().toLowerCase();
-    if (query === "") {
-      renderInventory(allItems);
-      return;
+    const catFilter = filterCategory.value;
+    const statusFilter = filterStatus.value;
+
+    let filtered = allItems;
+
+    if (query) {
+      filtered = filtered.filter(item =>
+        item.item_name.toLowerCase().includes(query) ||
+        (item.category && item.category.toLowerCase().includes(query))
+      );
     }
 
-    const filtered = allItems.filter(item =>
-      item.item_name.toLowerCase().includes(query) ||
-      (item.category && item.category.toLowerCase().includes(query))
-    );
-
-    if (filtered.length > 0) {
-      renderInventory(filtered);
-    } else {
-      // no items found message
-      inventoryList.innerHTML = `
-        <div class="not-found">
-          <img src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png" width="120">
-          <p>😢 No items found for "<b>${query}</b>"</p>
-        </div>`;
+    if (catFilter !== "All") {
+      filtered = filtered.filter(item => item.category === catFilter);
     }
-  });
 
-  // 🧰 Add Item
-  document.getElementById("addItemBtn").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
-  document.getElementById("addItemBtnEmpty").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(item => item.status === statusFilter);
+    }
 
-  document.getElementById("closeModal").onclick = () => modal.classList.add("hidden");
+    renderInventory(filtered.length ? filtered : []);
+    if (!filtered.length) {
+      inventoryList.innerHTML = `<div class="not-found">
+        <img src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png" width="120">
+        <p>😢 No items found</p>
+      </div>`;
+    }
+  }
 
-  // 💾 Save Item
-  form.onsubmit = e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch("api_inventory.php?action=save", { method: "POST", body: formData })
-      .then(r => r.json())
-      .then(() => {
-        modal.classList.add("hidden");
-        fetchInventory();
-        showToast("✅ Item successfully saved!");
-      });
-  };
-
-  // ✏️ Edit Item
-  window.editItem = function (id) {
-    fetch("api_inventory.php?action=get&id=" + id)
-      .then(r => r.json())
-      .then(data => {
-        modal.classList.remove("hidden");
-        document.getElementById("modalTitle").textContent = "✏️ Edit Item";
-        document.getElementById("item_id").value = data.item.item_id;
-        document.getElementById("item_name").value = data.item.item_name;
-        document.getElementById("category").value = data.item.category;
-        document.getElementById("quantity").value = data.item.quantity;
-        document.getElementById("expiry_date").value = data.item.expiry_date;
-      });
-  };
-
-  // 🗑️ Delete Item
-  window.showDelete = function (id) {
-    selectedDeleteId = id;
-    deleteModal.classList.remove("hidden");
-  };
-
-  document.getElementById("cancelDelete").onclick = () => deleteModal.classList.add("hidden");
-
-  document.getElementById("confirmDelete").onclick = () => {
-    fetch("api_inventory.php?action=delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "id=" + selectedDeleteId
-    }).then(() => {
-      deleteModal.classList.add("hidden");
-      fetchInventory();
-      showToast("🗑️ Item deleted!", "#e53935");
-    });
-  };
-
-  // Initial Load
-  fetchInventory();
-});
+  searchInput.addEventListener("input", applyFilters);
+  filterCategor
