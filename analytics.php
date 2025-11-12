@@ -27,6 +27,47 @@ $total_combined = $total_saved + $total_donations + $total_expired;
 $saved_percent = $total_combined > 0 ? round(($total_saved / $total_combined) * 100, 1) : 0;
 $donated_percent = $total_combined > 0 ? round(($total_donations / $total_combined) * 100, 1) : 0;
 $expired_percent = $total_combined > 0 ? round(($total_expired / $total_combined) * 100, 1) : 0;
+
+// ===== HANDLE AJAX FILTER REQUEST =====
+if (isset($_GET['action']) && $_GET['action'] === 'fetch_data') {
+    $date_filter = $_GET['date'] ?? 'all';
+    $status_filter = $_GET['status'] ?? 'all';
+
+    $where = "WHERE user_id = $user_id";
+
+    if ($status_filter != 'all') {
+        $status_filter_esc = $mysqli->real_escape_string($status_filter);
+        $where .= " AND LOWER(status) = '$status_filter_esc'";
+    }
+
+    if ($date_filter == 'weekly') {
+        $where .= " AND expiry_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+    } elseif ($date_filter == 'monthly') {
+        $where .= " AND expiry_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+    }
+
+    $statuses = ['used', 'for donation', 'available', 'for meal', 'expired'];
+    $status_counts = [];
+
+    foreach ($statuses as $status) {
+        $q = $mysqli->query("SELECT COUNT(*) AS count FROM food_item $where AND LOWER(status) = '$status'");
+        $status_counts[$status] = $q->fetch_assoc()['count'] ?? 0;
+    }
+
+    $total_saved = $status_counts['used'] + $status_counts['for meal'] + $status_counts['available'];
+    $total_donations = $status_counts['for donation'];
+    $total_expired = $status_counts['expired'];
+
+    echo json_encode([
+        'status_counts' => $status_counts,
+        'total_saved' => $total_saved,
+        'total_donations' => $total_donations,
+        'total_expired' => $total_expired
+    ]);
+    exit;
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -173,6 +214,59 @@ footer {
   max-width: 620px;
   margin: 40px auto 0;
 }
+
+/* ===== FILTER CONTROLS ===== */
+.filters {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filters label {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.filters select {
+  height: 38px;           /* same height as button */
+  padding: 0 10px;        /* inner spacing */
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e293b;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #3399ff;
+  box-shadow: 0 0 5px rgba(51,153,255,0.4);
+}
+
+#applyFilters {
+  height: 38px;           /* same height as selects */
+  padding: 0 20px;        /* horizontal padding */
+  font-size: 1rem;
+  font-weight: 600;
+  background: #3399ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#applyFilters:hover {
+  background: #1d70d3;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+
+
 </style>
 </head>
 <body>
@@ -200,6 +294,33 @@ footer {
     <?php if ($total_items == 0): ?>
       <p style="text-align:center;color:#888;">No food-saving activities found. Start logging or donating items to view your progress!</p>
     <?php else: ?>
+<!-- ===== FILTER CONTROLS ===== -->
+<div class="filters" style="margin-bottom:20px; display:flex; gap:15px; align-items:center;">
+  <label>
+    Date Range:
+    <select id="dateFilter">
+      <option value="all">All Time</option>
+      <option value="weekly">Last 7 Days</option>
+      <option value="monthly">Last 30 Days</option>
+    </select>
+  </label>
+
+  <label>
+    Status:
+    <select id="statusFilter">
+      <option value="all">All Statuses</option>
+      <option value="used">Used</option>
+      <option value="for donation">For Donation</option>
+      <option value="available">Available</option>
+      <option value="for meal">For Meal</option>
+      <option value="expired">Expired</option>
+    </select>
+  </label>
+
+  <button id="applyFilters" style="padding:5px 10px;">Apply Filters</button>
+</div>
+
+
     <div class="charts-grid">
       <div class="chart-card">
         <h3>Food Status Breakdown</h3>
@@ -229,12 +350,17 @@ footer {
 </div>
 
 <script>
-// Sidebar toggle
+// ===== GLOBAL CHART VARIABLES =====
+let foodPieChart;
+let impactChart;
+
+// ===== SIDEBAR TOGGLE =====
 document.getElementById('toggle-btn').addEventListener('click', function(){
   document.getElementById('container').classList.toggle('sidebar-collapsed');
 });
 
-// Chart.js: Food Status Pie
+// ===== CHART INITIALIZATION =====
+// Food Status Pie Chart
 const foodData = {
   labels: ['Used','For Donation','Available','For Meal','Expired'],
   datasets:[{
@@ -248,9 +374,9 @@ const foodData = {
     backgroundColor:['#36A2EB','#FF6384','#22c55e','#f59e0b','#ef4444']
   }]
 };
-new Chart(document.getElementById('foodPieChart'), {type:'pie', data:foodData});
+foodPieChart = new Chart(document.getElementById('foodPieChart'), { type:'pie', data:foodData });
 
-// Chart.js: Updated Impact Overview Doughnut
+// Impact Overview Doughnut Chart
 const impactData = {
   labels: ['Saved', 'Donated', 'Expired/Wasted'],
   datasets:[{
@@ -258,8 +384,7 @@ const impactData = {
     backgroundColor:['#22c55e','#3b82f6','#ef4444']
   }]
 };
-
-new Chart(document.getElementById('impactChart'), {
+impactChart = new Chart(document.getElementById('impactChart'), {
   type:'doughnut',
   data:impactData,
   options:{
@@ -280,6 +405,79 @@ new Chart(document.getElementById('impactChart'), {
     }
   }
 });
+
+// ===== FILTER FUNCTION =====
+function loadAnalytics(date='all', status='all') {
+  // If all time + all statuses, keep original PHP values
+  if(date === 'all' && status === 'all') {
+    // Reset Pie Chart
+    foodPieChart.data.datasets[0].data = [
+      <?php echo $status_counts['used']; ?>,
+      <?php echo $status_counts['for donation']; ?>,
+      <?php echo $status_counts['available']; ?>,
+      <?php echo $status_counts['for meal']; ?>,
+      <?php echo $status_counts['expired']; ?>
+    ];
+    foodPieChart.update();
+
+    // Reset Impact Chart
+    impactChart.data.datasets[0].data = [
+      <?php echo $total_saved; ?>,
+      <?php echo $total_donations; ?>,
+      <?php echo $total_expired; ?>
+    ];
+    impactChart.update();
+
+    // Reset Stats
+    document.querySelector('.stats-card:nth-child(2) .stat-value').innerHTML =
+      '<?php echo $total_saved; ?> (<?php echo $saved_percent; ?>%)';
+    document.querySelector('.stats-card:nth-child(3) .stat-value').innerHTML =
+      '<?php echo $total_donations; ?> (<?php echo $donated_percent; ?>%)';
+    return; // skip AJAX
+  }
+
+  // ===== AJAX FETCH FOR OTHER FILTERS =====
+  fetch(`analytics.php?action=fetch_data&date=${date}&status=${status}`)
+    .then(res => res.json())
+    .then(data => {
+      // Update Pie Chart
+      foodPieChart.data.datasets[0].data = [
+        data.status_counts['used'],
+        data.status_counts['for donation'],
+        data.status_counts['available'],
+        data.status_counts['for meal'],
+        data.status_counts['expired']
+      ];
+      foodPieChart.update();
+
+      // Update Impact Chart
+      impactChart.data.datasets[0].data = [
+        data.total_saved,
+        data.total_donations,
+        data.total_expired
+      ];
+      impactChart.update();
+
+      // Update Stat Cards
+      const total = data.total_saved + data.total_donations + data.total_expired;
+      document.querySelector('.stats-card:nth-child(2) .stat-value').innerHTML =
+        `${data.total_saved} (${total > 0 ? ((data.total_saved/total)*100).toFixed(1) : 0}%)`;
+      document.querySelector('.stats-card:nth-child(3) .stat-value').innerHTML =
+        `${data.total_donations} (${total > 0 ? ((data.total_donations/total)*100).toFixed(1) : 0}%)`;
+    })
+    .catch(err => console.error('AJAX error:', err));
+}
+
+// ===== APPLY FILTERS BUTTON =====
+document.getElementById('applyFilters').addEventListener('click', () => {
+  const date = document.getElementById('dateFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  loadAnalytics(date, status);
+});
+
+// ===== LOAD INITIAL DATA =====
+loadAnalytics();
 </script>
+
 </body>
 </html>
