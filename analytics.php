@@ -17,20 +17,16 @@ foreach ($statuses as $status) {
     $status_counts[$status] = $query->fetch_assoc()['count'] ?? 0;
 }
 
-// ----------------- MEAL INSIGHTS -----------------
-$meal_type_query = $mysqli->query("
-    SELECT meal_type, COUNT(*) AS count
-    FROM meal_plans
-    WHERE user_id = $user_id
-    GROUP BY meal_type
-");
+// Calculate totals
+$total_saved = $status_counts['used'] + $status_counts['for meal'] + $status_counts['available'];
+$total_donations = $status_counts['for donation'];
+$total_expired = $status_counts['expired'];
+$total_combined = $total_saved + $total_donations + $total_expired;
 
-$meal_types = [];
-$meal_counts = [];
-while ($row = $meal_type_query->fetch_assoc()) {
-    $meal_types[] = $row['meal_type'];
-    $meal_counts[] = $row['count'];
-}
+// Avoid division by zero
+$saved_percent = $total_combined > 0 ? round(($total_saved / $total_combined) * 100, 1) : 0;
+$donated_percent = $total_combined > 0 ? round(($total_donations / $total_combined) * 100, 1) : 0;
+$expired_percent = $total_combined > 0 ? round(($total_expired / $total_combined) * 100, 1) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -140,28 +136,42 @@ body {
   margin-bottom: 25px;
   font-weight: 600;
 }
-/* Charts */
+/* Charts & Stats */
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit,minmax(350px,1fr));
   gap: 25px;
 }
-.chart-card {
+.chart-card, .stats-card {
   background: #fff;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-.chart-card h3 {
   text-align: center;
-  margin-bottom: 20px;
+}
+.chart-card h3, .stats-card h3 {
   color: #1e293b;
+  margin-bottom: 15px;
+}
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3399ff;
+}
+.stat-sub {
+  color: #666;
+  font-size: 1rem;
 }
 /* Footer */
 footer {
   text-align: center;
   margin-top: 40px;
   color: #555;
+}
+/* ===== IMPACT CHART (NEW) ===== */
+.impact-chart {
+  max-width: 620px;
+  margin: 40px auto 0;
 }
 </style>
 </head>
@@ -195,12 +205,22 @@ footer {
         <h3>Food Status Breakdown</h3>
         <canvas id="foodPieChart"></canvas>
       </div>
-      <?php if (!empty($meal_types)): ?>
-      <div class="chart-card">
-        <h3>Meals by Type</h3>
-        <canvas id="mealBarChart"></canvas>
+      <div class="stats-card">
+        <h3>Total Food Saved from Waste</h3>
+        <p class="stat-value"><?php echo $total_saved; ?> <span style="font-size:1rem;color:#666;">(<?php echo $saved_percent; ?>%)</span></p>
+        <p class="stat-sub">Items saved from expiration or waste</p>
       </div>
-      <?php endif; ?>
+      <div class="stats-card">
+        <h3>Number of Donations Made</h3>
+        <p class="stat-value"><?php echo $total_donations; ?> <span style="font-size:1rem;color:#666;">(<?php echo $donated_percent; ?>%)</span></p>
+        <p class="stat-sub">Items donated to others</p>
+      </div>
+    </div>
+
+    <!-- Updated Chart: Impact Overview -->
+    <div class="chart-card impact-chart">
+      <h3>Impact Overview: Saved vs Donated</h3>
+      <canvas id="impactChart"></canvas>
     </div>
     <?php endif; ?>
 
@@ -230,18 +250,36 @@ const foodData = {
 };
 new Chart(document.getElementById('foodPieChart'), {type:'pie', data:foodData});
 
-// Chart.js: Meal Types Bar
-<?php if (!empty($meal_types)): ?>
-const mealData = {
-  labels: <?php echo json_encode($meal_types); ?>,
+// Chart.js: Updated Impact Overview Doughnut
+const impactData = {
+  labels: ['Saved', 'Donated', 'Expired/Wasted'],
   datasets:[{
-    label:'Number of Meals',
-    data: <?php echo json_encode($meal_counts); ?>,
-    backgroundColor:'#36A2EB'
+    data:[<?php echo $total_saved; ?>, <?php echo $total_donations; ?>, <?php echo $total_expired; ?>],
+    backgroundColor:['#22c55e','#3b82f6','#ef4444']
   }]
 };
-new Chart(document.getElementById('mealBarChart'), {type:'bar', data:mealData, options:{scales:{y:{beginAtZero:true}}}});
-<?php endif; ?>
+
+new Chart(document.getElementById('impactChart'), {
+  type:'doughnut',
+  data:impactData,
+  options:{
+    responsive:true,
+    cutout:'70%',
+    plugins:{
+      legend:{position:'bottom'},
+      tooltip:{
+        callbacks:{
+          label:function(context){
+            const total = context.dataset.data.reduce((a,b)=>a+b,0);
+            const value = context.parsed;
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
+    }
+  }
+});
 </script>
 </body>
 </html>
