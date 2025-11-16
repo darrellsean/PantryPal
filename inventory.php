@@ -1,6 +1,9 @@
 <?php 
 require_once 'config.php'; 
 require_login(); 
+
+// 🔵 Get notification filter from URL
+$activeFilter = $_GET['filter'] ?? 'none';
 ?>
 
 <!DOCTYPE html>
@@ -125,3 +128,4 @@ require_login();
   </script>
 </body>
 </html>
+
