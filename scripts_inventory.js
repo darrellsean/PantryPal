@@ -2,6 +2,12 @@ let selectedDeleteId = null;
 let allItems = []; // store all fetched items
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 🔵 READ FILTER FROM URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const notifFilter = urlParams.get("filter"); 
+  // values: "expiring", "donation", "meal", or null
+
   const modal = document.getElementById("itemModal");
   const deleteModal = document.getElementById("deleteModal");
   const form = document.getElementById("itemForm");
@@ -37,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return icons[cat] || "📦";
   }
 
-  // 🧾 Render all items
+  // 🧾 Render items
   function renderInventory(items) {
     inventoryList.innerHTML = "";
 
@@ -52,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     items.forEach(item => {
       const today = new Date();
       let cssClass = "fresh";
+
       if (item.expiry_date) {
         const exp = new Date(item.expiry_date);
         const diff = (exp - today) / (1000 * 60 * 60 * 24);
@@ -75,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
             </select>
           </div>
+
           <div class="card-actions">
             <button class="btn-secondary" onclick="editItem(${item.item_id})">✏️ Edit</button>
             <button class="btn-danger" onclick="showDelete(${item.item_id})">🗑️ Delete</button>
@@ -82,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
     });
 
-    // Attach event listener for status change
     document.querySelectorAll(".status-dropdown").forEach(sel => {
       sel.addEventListener("change", e => {
         const id = e.target.dataset.id;
@@ -102,15 +109,45 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(r => r.json())
       .then(data => {
         allItems = data.items || [];
-        applyFilters();
+        applyFiltersFromNotification();
       });
   }
 
-  // 🔍 Filter & Search
+  // 🔵 Apply filter based on notification click
+  function applyFiltersFromNotification() {
+    if (!notifFilter) {
+      renderInventory(allItems);
+      return;
+    }
+
+    if (notifFilter === "expiring") {
+      const filtered = allItems.filter(item => {
+        if (!item.expiry_date) return false;
+        const diff = (new Date(item.expiry_date) - new Date()) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 3;
+      });
+      renderInventory(filtered);
+      showToast("🔔 Showing items expiring soon");
+    }
+
+    if (notifFilter === "donation") {
+      const filtered = allItems.filter(item => item.status === "For Donation");
+      renderInventory(filtered);
+      showToast("🔔 Showing items flagged for donation");
+    }
+
+    if (notifFilter === "meal") {
+      const filtered = allItems.filter(item => item.status === "For Meal");
+      renderInventory(filtered);
+      showToast("🔔 Showing meal-planned items");
+    }
+  }
+
+  // 🔍 Regular search filter
   function applyFilters() {
     const query = searchInput.value.trim().toLowerCase();
-    const catFilter = filterCategory.value;
-    const statusFilter = filterStatus.value;
+    const catFilter = filterCategory ? filterCategory.value : "All";
+    const statusFilter = filterStatus ? filterStatus.value : "All";
 
     let filtered = allItems;
 
@@ -129,14 +166,23 @@ document.addEventListener("DOMContentLoaded", () => {
       filtered = filtered.filter(item => item.status === statusFilter);
     }
 
-    renderInventory(filtered.length ? filtered : []);
-    if (!filtered.length) {
-      inventoryList.innerHTML = `<div class="not-found">
-        <img src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png" width="120">
-        <p>😢 No items found</p>
-      </div>`;
-    }
+    renderInventory(filtered);
   }
 
   searchInput.addEventListener("input", applyFilters);
-  filterCategor
+
+  // Fetch items on load
+  fetchInventory();
+});
+
+// ===============================
+// 🗑️ DELETE ITEM (GLOBAL)
+// ===============================
+function showDelete(id) {
+  selectedDeleteId = id;
+  document.getElementById("deleteModal").classList.remove("hidden");
+}
+
+function editItem(id) {
+  // your existing edit function
+}
