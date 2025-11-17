@@ -1,42 +1,27 @@
 <?php
 require_once 'config.php';
+require_login();
+session_start();
 
-// Demo notifications — you will later fetch from DB
-$notifications = [
-    [
-        'id' => 1,
-        'title' => 'Milk is expiring soon!',
-        'type' => 'inventory',
-        'time' => '2025-10-12 10:00',
-        'read' => false,
-        'link' => 'inventory.php?filter=expiring'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Donation request accepted!',
-        'type' => 'donation',
-        'time' => '2025-10-11 15:30',
-        'read' => true,
-        'link' => 'inventory.php?filter=donation'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Meal reminder: Ingredients needed for planned meal',
-        'type' => 'meal',
-        'time' => '2025-10-10 09:45',
-        'read' => false,
-        'link' => 'inventory.php?filter=meal'
-    ],
-    [
-        'id' => 4,
-        'title' => 'Privacy alert: New login detected',
-        'type' => 'security',
-        'time' => '2025-10-09 21:15',
-        'read' => false,
-        'link' => 'settings.php'
-    ],
-];
+$user_id = $_SESSION['user_id'];
+
+// Fetch notifications from DB (new → old)
+$stmt = $mysqli->prepare("
+    SELECT notification_id, title, message, type, link, is_read, created_at
+    FROM notifications
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$notifications = [];
+while ($row = $result->fetch_assoc()) {
+    $notifications[] = $row;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,7 +31,9 @@ $notifications = [
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
+
 <body>
+
 <div class="dashboard">
 
     <!-- SIDEBAR -->
@@ -62,7 +49,7 @@ $notifications = [
             <a href="inventory.php" class="nav-item"><i class="fas fa-box"></i><span>Inventory</span></a>
             <a href="analytics.php" class="nav-item"><i class="fas fa-chart-bar"></i><span>Analytics</span></a>
 
-            <!-- CORRECTED LINK HERE -->
+            <!-- FIXED LINK -->
             <a href="view_notifications.php" class="nav-item active">
                 <i class="fas fa-bell"></i><span>Notifications</span>
             </a>
@@ -72,7 +59,7 @@ $notifications = [
         </nav>
 
         <div class="sidebar-footer">
-            <p>Hi, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'User'); ?> 👋</p>
+            <p>Hi, <?= htmlspecialchars($_SESSION['user_name'] ?? "User") ?> 👋</p>
             <a href="logout.php" class="logout-btn">Logout</a>
         </div>
     </aside>
@@ -80,6 +67,7 @@ $notifications = [
     <!-- MAIN CONTENT -->
     <div class="main-content">
 
+        <!-- HEADER -->
         <div class="topbar">
             <h2>Notifications</h2>
         </div>
@@ -90,23 +78,37 @@ $notifications = [
 
                 <?php if (empty($notifications)) : ?>
                     <p class="no-notifications">No new notifications</p>
+
                 <?php else: ?>
+
                     <div class="notification-list" id="notificationList">
 
                         <?php foreach ($notifications as $note): ?>
-                            <div class="notification-item <?= $note['read'] ? 'read' : 'unread' ?>" data-id="<?= $note['id'] ?>">
+                            <div class="notification-item <?= $note['is_read'] ? 'read' : 'unread' ?>"
+                                 data-id="<?= $note['notification_id'] ?>">
 
                                 <div class="notif-text">
-                                    <a href="<?= htmlspecialchars($note['link']) ?>" class="notif-link">
+
+                                    <!-- CLICKABLE NOTIFICATION -->
+                                    <a href="<?= htmlspecialchars($note['link'] ?? '#') ?>" class="notif-link">
                                         <strong><?= htmlspecialchars($note['title']) ?></strong>
                                     </a>
 
+                                    <!-- TYPE BADGE -->
                                     <span class="notif-type"><?= ucfirst($note['type']) ?></span>
-                                    <span class="time"><?= htmlspecialchars($note['time']) ?></span>
+
+                                    <!-- TIMESTAMP -->
+                                    <span class="time"><?= htmlspecialchars($note['created_at']) ?></span>
+
+                                    <!-- MESSAGE BODY -->
+                                    <p><?= htmlspecialchars($note['message']) ?></p>
                                 </div>
 
                                 <div class="notif-actions">
-                                    <button class="mark-read"><?= $note['read'] ? 'Unread' : 'Read' ?></button>
+                                    <button class="mark-read">
+                                        <?= $note['is_read'] ? 'Unread' : 'Read' ?>
+                                    </button>
+
                                     <button class="delete-btn">Delete</button>
                                 </div>
 
@@ -118,7 +120,9 @@ $notifications = [
                     <div class="notif-footer">
                         <button id="deleteAll">Delete All</button>
                     </div>
+
                 <?php endif; ?>
+
             </div>
         </div>
 
@@ -133,6 +137,8 @@ $notifications = [
         document.getElementById('sidebar').classList.toggle('collapsed');
     });
 </script>
+
 <script src="notifications.js"></script>
+
 </body>
 </html>
