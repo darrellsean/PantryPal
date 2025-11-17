@@ -82,6 +82,7 @@ while ($row = $result->fetch_assoc()) {
                 <?php else: ?>
 
                     <div class="notification-list" id="notificationList">
+
                         <?php foreach ($notifications as $note): ?>
                             <div class="notification-item <?= $note['is_read'] ? 'read' : 'unread' ?>"
                                  data-id="<?= $note['notification_id'] ?>">
@@ -110,8 +111,10 @@ while ($row = $result->fetch_assoc()) {
 
                                     <button class="delete-btn">Delete</button>
                                 </div>
+
                             </div>
                         <?php endforeach; ?>
+
                     </div>
 
                     <div class="notif-footer">
@@ -130,7 +133,6 @@ while ($row = $result->fetch_assoc()) {
 </div>
 
 <script>
-    // Sidebar toggle
     document.getElementById('toggle-btn').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('collapsed');
     });

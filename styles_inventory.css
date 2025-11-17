@@ -1,0 +1,461 @@
+/* =============================
+   GLOBAL THEME (matches home.css)
+============================= */
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: url("blue kitchen.png") no-repeat center center fixed;
+  background-size: cover;
+  color: #333;
+  height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Layout Wrapper */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+/* =============================
+   SIDEBAR (identical to home)
+============================= */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: #1e293b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 15px;
+  transition: width 0.3s ease;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+/* Toggle Button */
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #3399ff;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.toggle-btn:hover {
+  color: #3399ff;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logo img {
+  width: 200px;
+  height: 60px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+}
+
+/* When collapsed */
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar.collapsed .logo img {
+  width: 50px;
+  height: 40px;
+}
+
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .sidebar-footer {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: #cbd5e1;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  padding: 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: #3399ff;
+  color: white;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  position: absolute;
+  bottom: 20px;
+  width: 93%;
+  text-align: center;
+  font-size: 14px;
+  color: #fff;
+}
+
+.logout-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #e74c3c;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+/* =============================
+   MAIN CONTENT
+============================= */
+.main-content {
+  margin-left: 250px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 15px 0 0 15px;
+  padding: 25px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+/* =============================
+   TOP BAR
+============================= */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  color: #fff;
+  padding: 15px 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.search-box {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  width: 300px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.btn-primary {
+  background-color: #3399ff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #007bff;
+}
+
+/* =============================
+   INVENTORY CARDS + EMPTY STATE
+============================= */
+.inventory-area {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: #1e293b;
+}
+
+.empty-state img {
+  width: 120px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.inventory-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inventory-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.inventory-card.expiring { border-left: 5px solid #f59e0b; }
+.inventory-card.expired { border-left: 5px solid #e11d48; }
+.inventory-card.fresh { border-left: 5px solid #22c55e; }
+
+.card-meta {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.btn-secondary {
+  background: #1e293b;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-secondary:hover { background: #334155; }
+
+.btn-danger {
+  background: #e11d48;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-danger:hover { background: #be123c; }
+
+/* =============================
+   MODALS, TOAST, FOOTER
+============================= */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 41, 59, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.form-grid { display: flex; flex-direction: column; gap: 15px; }
+.input-field, select.input-field {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #1e293b;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+footer {
+  text-align: center;
+  color: #555;
+  padding: 20px;
+  margin-top: 40px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Inventory Card minor tweaks */
+.inventory-card h3 { margin-top: 0; }
+.card-meta { font-size: 0.85rem; margin: 4px 0; color: #555; }
+.card-actions { margin-top: 12px; display: flex; gap: 8px; }
+
+/* Buttons */
+.btn-primary {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-primary:hover { background: #1565c0; }
+.btn-secondary {
+  background: #eee;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-danger {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  display:flex; justify-content:center; align-items:center;
+}
+.hidden { display:none; }
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 95%;
+  max-width: 400px;
+  color: #333;
+}
+.form-grid { display: grid; gap: 12px; }
+.input-field {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 6px;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.toast.show { opacity: 1; }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 12px;
+  font-size: 0.85rem;
+  background: #fff;
+  border-top: 1px solid #eee;
+  margin-top: auto;
+}
+.not-found {
+  text-align: center;
+  grid-column: 1 / -1;
+  margin-top: 60px;
+  color: #555;
+}
+.not-found img {
+  opacity: 0.8;
+  margin-bottom: 15px;
+}
+.not-found p {
+  font-size: 1.1rem;
+}
+
+/* =============================
+   NEW STYLES (Status & Filters)
+============================= */
+/* Status Dropdown inside card */
+.status-dropdown {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+/* Filter Controls (above inventory grid) */
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.filters select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+  background: #f9f9f9;
+  cursor: pointer;
+}
