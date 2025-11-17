@@ -3,9 +3,7 @@ let allItems = []; // store all fetched items
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ===============================
-  // 🔍 READ FILTER FROM URL
-  // ===============================
+  // 🔵 READ FILTER FROM URL
   const urlParams = new URLSearchParams(window.location.search);
   const notifFilter = urlParams.get("filter"); 
   // values: "expiring", "donation", "meal", or null
@@ -49,9 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return icons[cat] || "📦";
   }
 
-  // ===============================
-  // 🧾 Render Inventory Items
-  // ===============================
+  // 🧾 Render items
   function renderInventory(items) {
     inventoryList.innerHTML = "";
 
@@ -98,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
     });
 
-    // Update status listener
     document.querySelectorAll(".status-dropdown").forEach(sel => {
       sel.addEventListener("change", e => {
         const id = e.target.dataset.id;
@@ -120,15 +115,26 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(r => r.json())
       .then(data => {
         allItems = data.items || [];
-
-        // Apply filters after fetch
         applyFiltersFromNotification();
       });
+      renderInventory(filtered);
+      showToast("🔔 Showing items expiring soon");
+    }
+
+    if (notifFilter === "donation") {
+      const filtered = allItems.filter(item => item.status === "For Donation");
+      renderInventory(filtered);
+      showToast("🔔 Showing items flagged for donation");
+    }
+
+    if (notifFilter === "meal") {
+      const filtered = allItems.filter(item => item.status === "For Meal");
+      renderInventory(filtered);
+      showToast("🔔 Showing items planned for meals");
+    }
   }
 
-  // ===============================
-  // 🔔 Apply Notification Filters
-  // ===============================
+  // 🔵 Apply filter based on notification click
   function applyFiltersFromNotification() {
     if (!notifFilter) {
       renderInventory(allItems);
@@ -154,13 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (notifFilter === "meal") {
       const filtered = allItems.filter(item => item.status === "For Meal");
       renderInventory(filtered);
-      showToast("🔔 Showing items planned for meals");
+      showToast("🔔 Showing meal-planned items");
     }
   }
 
-  // ===============================
-  // 🔍 Normal Search + Category Filter
-  // ===============================
+  // 🔍 Regular search filter
   function applyFilters() {
     const query = searchInput.value.trim().toLowerCase();
     const catFilter = filterCategory ? filterCategory.value : "All";
@@ -201,5 +205,5 @@ function showDelete(id) {
 }
 
 function editItem(id) {
-  // your existing edit function stays
+  // your existing edit function
 }
