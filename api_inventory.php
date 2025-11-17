@@ -62,4 +62,3 @@ if ($action === 'update_status') {
     echo json_encode(['ok'=>true]);
     exit;
 }
-

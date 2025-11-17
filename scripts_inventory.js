@@ -18,7 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterCategory = document.getElementById("filterCategory");
   const filterStatus = document.getElementById("filterStatus");
 
+  // ===============================
   // 🌟 Toast Notification
+  // ===============================
   function showToast(msg, color = "#1976d2") {
     toast.textContent = msg;
     toast.style.background = color;
@@ -26,7 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => toast.classList.remove("show"), 2500);
   }
 
+  // ===============================
   // 🧩 Category Icons
+  // ===============================
   function getCategoryIcon(cat) {
     const icons = {
       Vegetable: "🥬",
@@ -103,7 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ===============================
   // 📦 Fetch Inventory
+  // ===============================
   function fetchInventory() {
     fetch("api_inventory.php?action=list")
       .then(r => r.json())
@@ -111,6 +117,21 @@ document.addEventListener("DOMContentLoaded", () => {
         allItems = data.items || [];
         applyFiltersFromNotification();
       });
+      renderInventory(filtered);
+      showToast("🔔 Showing items expiring soon");
+    }
+
+    if (notifFilter === "donation") {
+      const filtered = allItems.filter(item => item.status === "For Donation");
+      renderInventory(filtered);
+      showToast("🔔 Showing items flagged for donation");
+    }
+
+    if (notifFilter === "meal") {
+      const filtered = allItems.filter(item => item.status === "For Meal");
+      renderInventory(filtered);
+      showToast("🔔 Showing items planned for meals");
+    }
   }
 
   // 🔵 Apply filter based on notification click

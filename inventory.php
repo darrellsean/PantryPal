@@ -55,6 +55,33 @@ $activeFilter = $_GET['filter'] ?? 'none';
         <button id="addItemBtn" class="btn-primary">+ Add Item</button>
       </header>
 
+      <!-- FILTERS -->
+      <div class="filters">
+        <!-- Category Filter -->
+        <select id="filterCategory">
+          <option value="All">All Categories</option>
+          <option value="Vegetable">Vegetable</option>
+          <option value="Fruit">Fruit</option>
+          <option value="Dairy">Dairy</option>
+          <option value="Meat">Meat</option>
+          <option value="Frozen">Frozen</option>
+          <option value="Bakery">Bakery</option>
+          <option value="Pantry">Pantry</option>
+          <option value="Snacks">Snacks</option>
+          <option value="Drinks">Drinks</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <!-- Status Filter -->
+        <select id="filterStatus">
+          <option value="All">All Status</option>
+          <option value="Available">Available</option>
+          <option value="Donation">Flagged for Donation</option>
+          <option value="Meal">Arranged for Meal</option>
+          <option value="Used">Used</option>
+        </select>
+      </div>
+
       <main class="inventory-area" id="inventoryList">
         <div id="emptyState" class="empty-state">
           <img src="https://cdn-icons-png.flaticon.com/512/1047/1047711.png" alt="Empty" />
