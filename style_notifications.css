@@ -281,6 +281,7 @@ footer {
   .container { width: 92%; max-height: calc(100vh - 200px); }
 }
 
+/* Clickable notification text */
 .notif-link {
     color: #fff;
     text-decoration: none;
@@ -289,6 +290,7 @@ footer {
     text-decoration: underline;
 }
 
+/* Notification category badge */
 .notif-type {
     display: inline-block;
     background: #3399ff;
@@ -297,4 +299,3 @@ footer {
     font-size: 11px;
     margin-top: 3px;
 }
-

@@ -2,6 +2,12 @@ let selectedDeleteId = null;
 let allItems = []; // store all fetched items
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 🔵 READ FILTER FROM URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const notifFilter = urlParams.get("filter"); 
+  // values: "expiring", "donation", "meal", or null
+
   const modal = document.getElementById("itemModal");
   const deleteModal = document.getElementById("deleteModal");
   const form = document.getElementById("itemForm");
@@ -9,8 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const toast = document.getElementById("toast");
   const emptyState = document.getElementById("emptyState");
   const searchInput = document.getElementById("searchInput");
+  const filterCategory = document.getElementById("filterCategory");
+  const filterStatus = document.getElementById("filterStatus");
 
+  // ===============================
   // 🌟 Toast Notification
+  // ===============================
   function showToast(msg, color = "#1976d2") {
     toast.textContent = msg;
     toast.style.background = color;
@@ -18,7 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => toast.classList.remove("show"), 2500);
   }
 
+  // ===============================
   // 🧩 Category Icons
+  // ===============================
   function getCategoryIcon(cat) {
     const icons = {
       Vegetable: "🥬",
@@ -35,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return icons[cat] || "📦";
   }
 
-  // 🧾 Render all items
+  // 🧾 Render items
   function renderInventory(items) {
     inventoryList.innerHTML = "";
 
@@ -50,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     items.forEach(item => {
       const today = new Date();
       let cssClass = "fresh";
+
       if (item.expiry_date) {
         const exp = new Date(item.expiry_date);
         const diff = (exp - today) / (1000 * 60 * 60 * 24);
@@ -63,111 +76,134 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="card-meta">Category: ${item.category || "N/A"}</div>
           <div class="card-meta">Qty: ${item.quantity || "N/A"}</div>
           <div class="card-meta">Expires: ${item.expiry_date || "—"}</div>
+          <div class="card-meta">
+            Status: 
+            <select class="status-dropdown" data-id="${item.item_id}">
+              <option value="Available" ${item.status==='Available'?'selected':''}>Available</option>
+              <option value="For Donation" ${item.status==='For Donation'?'selected':''}>Flagged for Donation</option>
+              <option value="For Meal" ${item.status==='For Meal'?'selected':''}>Arranged for Meal</option>
+              <option value="Used" ${item.status==='Used'?'selected':''}>Used</option>
+              <option value="Expired" ${item.status==='Expired'?'selected':''}>Expired</option>
+            </select>
+          </div>
+
           <div class="card-actions">
             <button class="btn-secondary" onclick="editItem(${item.item_id})">✏️ Edit</button>
             <button class="btn-danger" onclick="showDelete(${item.item_id})">🗑️ Delete</button>
           </div>
         </div>`;
     });
+
+    document.querySelectorAll(".status-dropdown").forEach(sel => {
+      sel.addEventListener("change", e => {
+        const id = e.target.dataset.id;
+        const status = e.target.value;
+        fetch("api_inventory.php?action=update_status", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `id=${id}&status=${encodeURIComponent(status)}`
+        }).then(() => showToast("✅ Status updated!", "#f59e0b"));
+      });
+    });
   }
 
+  // ===============================
   // 📦 Fetch Inventory
+  // ===============================
   function fetchInventory() {
     fetch("api_inventory.php?action=list")
       .then(r => r.json())
       .then(data => {
         allItems = data.items || [];
-        renderInventory(allItems);
+        applyFiltersFromNotification();
       });
+      renderInventory(filtered);
+      showToast("🔔 Showing items expiring soon");
+    }
+
+    if (notifFilter === "donation") {
+      const filtered = allItems.filter(item => item.status === "For Donation");
+      renderInventory(filtered);
+      showToast("🔔 Showing items flagged for donation");
+    }
+
+    if (notifFilter === "meal") {
+      const filtered = allItems.filter(item => item.status === "For Meal");
+      renderInventory(filtered);
+      showToast("🔔 Showing items planned for meals");
+    }
   }
 
-  // 🔍 Search Functionality
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
-    if (query === "") {
+  // 🔵 Apply filter based on notification click
+  function applyFiltersFromNotification() {
+    if (!notifFilter) {
       renderInventory(allItems);
       return;
     }
 
-    const filtered = allItems.filter(item =>
-      item.item_name.toLowerCase().includes(query) ||
-      (item.category && item.category.toLowerCase().includes(query))
-    );
-
-    if (filtered.length > 0) {
+    if (notifFilter === "expiring") {
+      const filtered = allItems.filter(item => {
+        if (!item.expiry_date) return false;
+        const diff = (new Date(item.expiry_date) - new Date()) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 3;
+      });
       renderInventory(filtered);
-    } else {
-      // no items found message
-      inventoryList.innerHTML = `
-        <div class="not-found">
-          <img src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png" width="120">
-          <p>😢 No items found for "<b>${query}</b>"</p>
-        </div>`;
+      showToast("🔔 Showing items expiring soon");
     }
-  });
 
-  // 🧰 Add Item
-  document.getElementById("addItemBtn").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
-  document.getElementById("addItemBtnEmpty").onclick = () => {
-    modal.classList.remove("hidden");
-    form.reset();
-    document.getElementById("modalTitle").textContent = "➕ Add New Item";
-  };
+    if (notifFilter === "donation") {
+      const filtered = allItems.filter(item => item.status === "For Donation");
+      renderInventory(filtered);
+      showToast("🔔 Showing items flagged for donation");
+    }
 
-  document.getElementById("closeModal").onclick = () => modal.classList.add("hidden");
+    if (notifFilter === "meal") {
+      const filtered = allItems.filter(item => item.status === "For Meal");
+      renderInventory(filtered);
+      showToast("🔔 Showing meal-planned items");
+    }
+  }
 
-  // 💾 Save Item
-  form.onsubmit = e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch("api_inventory.php?action=save", { method: "POST", body: formData })
-      .then(r => r.json())
-      .then(() => {
-        modal.classList.add("hidden");
-        fetchInventory();
-        showToast("✅ Item successfully saved!");
-      });
-  };
+  // 🔍 Regular search filter
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const catFilter = filterCategory ? filterCategory.value : "All";
+    const statusFilter = filterStatus ? filterStatus.value : "All";
 
-  // ✏️ Edit Item
-  window.editItem = function (id) {
-    fetch("api_inventory.php?action=get&id=" + id)
-      .then(r => r.json())
-      .then(data => {
-        modal.classList.remove("hidden");
-        document.getElementById("modalTitle").textContent = "✏️ Edit Item";
-        document.getElementById("item_id").value = data.item.item_id;
-        document.getElementById("item_name").value = data.item.item_name;
-        document.getElementById("category").value = data.item.category;
-        document.getElementById("quantity").value = data.item.quantity;
-        document.getElementById("expiry_date").value = data.item.expiry_date;
-      });
-  };
+    let filtered = allItems;
 
-  // 🗑️ Delete Item
-  window.showDelete = function (id) {
-    selectedDeleteId = id;
-    deleteModal.classList.remove("hidden");
-  };
+    if (query) {
+      filtered = filtered.filter(item =>
+        item.item_name.toLowerCase().includes(query) ||
+        (item.category && item.category.toLowerCase().includes(query))
+      );
+    }
 
-  document.getElementById("cancelDelete").onclick = () => deleteModal.classList.add("hidden");
+    if (catFilter !== "All") {
+      filtered = filtered.filter(item => item.category === catFilter);
+    }
 
-  document.getElementById("confirmDelete").onclick = () => {
-    fetch("api_inventory.php?action=delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: "id=" + selectedDeleteId
-    }).then(() => {
-      deleteModal.classList.add("hidden");
-      fetchInventory();
-      showToast("🗑️ Item deleted!", "#e53935");
-    });
-  };
+    if (statusFilter !== "All") {
+      filtered = filtered.filter(item => item.status === statusFilter);
+    }
 
-  // Initial Load
+    renderInventory(filtered);
+  }
+
+  searchInput.addEventListener("input", applyFilters);
+
+  // Fetch items on load
   fetchInventory();
 });
+
+// ===============================
+// 🗑️ DELETE ITEM (GLOBAL)
+// ===============================
+function showDelete(id) {
+  selectedDeleteId = id;
+  document.getElementById("deleteModal").classList.remove("hidden");
+}
+
+function editItem(id) {
+  // your existing edit function
+}
