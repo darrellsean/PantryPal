@@ -26,11 +26,14 @@ if ($action === 'save') {
 
     // New item
     if (!$item_id) {
-        $stmt = $mysqli->prepare("INSERT INTO food_item (user_id, item_name, category, quantity, expiry_date) VALUES (?,?,?,?,?)");
-        $stmt->bind_param('issss', $user_id, $name, $cat, $qty, $exp);
+        $stmt = $mysqli->prepare("
+            UPDATE food_item 
+            SET item_name=?, category=?, quantity=?, expiry_date=? 
+            WHERE item_id=? AND user_id=?
+        ");
+        $stmt->bind_param('ssssii', $name, $cat, $qty, $exp, $item_id, $user_id);
         $stmt->execute();
 
-        
         addNotification(
             $user_id,
             "New Inventory Item Added",
@@ -42,8 +45,11 @@ if ($action === 'save') {
     } 
     // update item
     else {
-        $stmt = $mysqli->prepare("UPDATE food_item SET item_name=?, category=?, quantity=?, expiry_date=? WHERE item_id=? AND user_id=?");
-        $stmt->bind_param('ssssii', $name, $cat, $qty, $exp, $item_id, $user_id);
+        $stmt = $mysqli->prepare("
+            INSERT INTO food_item (user_id, item_name, category, quantity, expiry_date)
+            VALUES (?,?,?,?,?)
+        ");
+        $stmt->bind_param('issss', $user_id, $name, $cat, $qty, $exp);
         $stmt->execute();
 
         // 🔔 Notification – item updated
@@ -147,3 +153,4 @@ if ($action === 'update_status') {
 }
 
 ?>
+
