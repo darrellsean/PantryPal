@@ -280,3 +280,22 @@ footer {
   .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 20px; }
   .container { width: 92%; max-height: calc(100vh - 200px); }
 }
+
+/* Clickable notification text */
+.notif-link {
+    color: #fff;
+    text-decoration: none;
+}
+.notif-link:hover {
+    text-decoration: underline;
+}
+
+/* Notification category badge */
+.notif-type {
+    display: inline-block;
+    background: #3399ff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    margin-top: 3px;
+}

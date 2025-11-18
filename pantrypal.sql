@@ -1,10 +1,7 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
--- Host: 127.0.0.1
--- Generation Time: Oct 14, 2025 at 08:54 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- ===========================================================
+-- PantryPal Database (Final Correct Version)
+-- MariaDB 10.4 Compatible, No FK Errors
+-- ===========================================================
 
 CREATE DATABASE IF NOT EXISTS `pantrypal`
   CHARACTER SET utf8mb4
@@ -13,16 +10,19 @@ CREATE DATABASE IF NOT EXISTS `pantrypal`
 USE `pantrypal`;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
 SET time_zone = "+00:00";
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
- /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
- /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
- /*!40101 SET NAMES utf8mb4 */;
+-- --------------------------------------------------------
+-- SAFE DROP ORDER (Fixes foreign key dependency issues)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `notifications`;
+DROP TABLE IF EXISTS `meal_plans`;
+DROP TABLE IF EXISTS `food_item`;
+DROP TABLE IF EXISTS `twofa_codes`;
+DROP TABLE IF EXISTS `users`;
 
 -- --------------------------------------------------------
--- Table structure for table `twofa_codes`
+-- TABLE: twofa_codes
 -- --------------------------------------------------------
 CREATE TABLE `twofa_codes` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -37,7 +37,7 @@ INSERT INTO `twofa_codes` (`id`, `email`, `code`, `expires_at`) VALUES
 (1, 'seanwarkey@gmail.com', '816360', '2025-10-14 05:39:20');
 
 -- --------------------------------------------------------
--- Table structure for table `users`
+-- TABLE: users
 -- --------------------------------------------------------
 CREATE TABLE `users` (
   `ID` INT(10) NOT NULL AUTO_INCREMENT,
@@ -55,9 +55,9 @@ INSERT INTO `users` (`ID`, `firstName`, `lastName`, `email`, `password`, `twofa_
 (4, 'Leo', 'Dicaprio', 'tffbruv@gmail.com', '81dc9bdb52d04dc20036dbd8313ed055', 1);
 
 -- --------------------------------------------------------
--- Table structure for `food_item`
+-- TABLE: food_item
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `food_item` (
+CREATE TABLE `food_item` (
   `item_id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(11) NOT NULL,
   `item_name` VARCHAR(100) NOT NULL,
@@ -75,44 +75,40 @@ INSERT INTO `food_item` (`user_id`, `item_name`, `category`, `quantity`, `expiry
 (2, 'Apples', 'Fruit', '5 pcs', '2025-10-20');
 
 -- --------------------------------------------------------
--- Table structure for `meal_plans`
+-- TABLE: meal_plans  (with CORRECT day column)
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `meal_plans` (
+CREATE TABLE `meal_plans` (
   `plan_id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(10) NOT NULL,
   `week_start` DATE NOT NULL,
+  `day` VARCHAR(20) NOT NULL,
   `meal_type` VARCHAR(50) NOT NULL,
   `custom_meal_name` VARCHAR(100) DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`plan_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-INSERT INTO `meal_plans` (`user_id`, `week_start`, `meal_type`, `custom_meal_name`) VALUES
-(1, '2025-10-13', 'Dinner', 'Grilled Chicken Salad'),
-(1, '2025-10-13', 'Lunch', 'Pasta Alfredo'),
-(2, '2025-10-13', 'Breakfast', 'Omelette and Toast');
-
 -- --------------------------------------------------------
--- Table structure for `notifications`
+-- TABLE: notifications
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `notifications` (
+CREATE TABLE `notifications` (
   `notification_id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` INT(10) NOT NULL,
   `title` VARCHAR(255) NOT NULL,
   `message` TEXT NOT NULL,
   `is_read` BOOLEAN DEFAULT FALSE,
+  `type` VARCHAR(50) DEFAULT 'general',
+  `link` VARCHAR(255) DEFAULT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`notification_id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Adjust auto increments
-ALTER TABLE `twofa_codes`
-  MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+-- --------------------------------------------------------
+-- AUTO_INCREMENT FIX
+-- --------------------------------------------------------
+ALTER TABLE `twofa_codes` MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+ALTER TABLE `users` MODIFY `ID` INT(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
-ALTER TABLE `users`
-  MODIFY `ID` INT(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
- /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
- /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
