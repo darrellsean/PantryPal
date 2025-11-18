@@ -1,0 +1,159 @@
+/* General body styling */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Montserrat", sans-serif;
+  background: url(login\ image.jpg);
+  background-size: 100%;
+}
+/* Wrapper to center logo + container */
+.wrapper {
+  display: flex;
+  flex-direction: column; /* logo on top, container below */
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+/* Logo styling */
+.logo img {
+  width: 300px;  /* adjust logo size */
+  height: auto;
+}
+
+
+/* Glassmorphism effect container */
+.container {
+  position: relative;
+  width: 350px;
+  padding: 30px;
+  margin-top: 1px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  color: #fff;
+}
+
+/* Remove old fake circle/logo */
+.container::before {
+  content: none;
+}
+
+/* New logo above the container */
+.logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px; /* space between logo and card */
+}
+
+
+/* Form title */
+.form-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+/* Input groups */
+.input-group {
+  position: relative;
+  margin: 15px 0;
+}
+
+.input-group i {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #fff;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 40px;
+  border: none;
+  outline: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  box-sizing: border-box; /* ✅ prevents overflow */
+}
+
+
+.input-group label {
+  position: absolute;
+  left: 40px;
+  top: -8px;
+  font-size: 12px;
+  color: #eee;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #4db8ff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #3399ff;
+}
+
+/* Links & extra text */
+.links {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.links p {
+  margin: 5px 0;
+}
+
+button {
+  background: transparent;
+  border: 1px solid #fff;
+  padding: 6px 14px;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #4db8ff;
+  border-color: #4db8ff;
+}
+
+.or {
+  margin: 15px 0;
+  color: #ddd;
+}
+
+.icons i {
+  font-size: 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.icons i:hover {
+  color: #4db8ff;
+}
